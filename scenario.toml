@@ -5,14 +5,14 @@ env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}",
 
 [[participants]]
 agentbeats_id = "019abee6-6e45-79a1-a09c-8ca8f622cf3a"
-name = "pro"
+name = "pro_debater"
 role = "pro_debater"
 image = "ghcr.io/komyo-ai/agentbeats-tutorial-debater:latest"
 env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
 
 [[participants]]
 agentbeats_id = "019abeeb-2c07-7af1-91dc-8bc2e8e45ed9"
-name = "antipro"
+name = "con_debater"
 role = "con_debater"
 image = "ghcr.io/komyo-ai/agentbeats-tutorial-debater:latest"
 env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
