@@ -17,4 +17,4 @@ env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}",
 
 [config]
 topic = "Is Lebron James the greatest basketball player of all time?"
-num_rounds = 3
+num_rounds = 2
