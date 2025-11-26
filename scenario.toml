@@ -1,19 +1,20 @@
 [green_agent]
 agentbeats_id = "019ab9d3-797b-7490-b5e1-d7ed6226e311"
-image = "ghcr.io/andrew7234/web3-green-agent:latest"
-env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
+image = "ghcr.io/komyo-ai/agentbeats-tutorial-debate-judge:latest"
+env = { GOOGLE_GENAI_USE_VERTEXAI=FALSE, GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-agentbeats_id = ""
-name = "guardian"
-image = ""
-env = {}
+agentbeats_id = "019abee6-6e45-79a1-a09c-8ca8f622cf3a"
+name = "pro"
+image = "ghcr.io/komyo-ai/agentbeats-tutorial-debater:latest"
+env = { GOOGLE_GENAI_USE_VERTEXAI=FALSE, GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
 
 [[participants]]
-agentbeats_id = ""
-name = "penetrator"
-image = ""
-env = {}
+agentbeats_id = "019abee6-6e45-79a1-a09c-8ca8f622cf3a"
+name = "antipro"
+image = "ghcr.io/komyo-ai/agentbeats-tutorial-debater:latest"
+env = { GOOGLE_GENAI_USE_VERTEXAI=FALSE, GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
 
 [config]
-# Add your assessment config here
+topic = "Is Lebron James the greatest basketball player of all time?"
+num_rounds = 3
