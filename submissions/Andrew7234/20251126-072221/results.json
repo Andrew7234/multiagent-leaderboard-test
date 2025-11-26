@@ -1,0 +1,30 @@
+[
+  {
+    "id": "019abee6-6e45-79a1-a09c-8ca8f622cf3a",
+    "role": "pro_debater",
+    "scores": {
+      "emotional_appeal": 0.7,
+      "argument_clarity": 0.9,
+      "argument_arrangement": 0.9,
+      "relevance_to_topic": 1.0,
+      "total_score": 3.5
+    }
+  },
+  {
+    "id": "019abeeb-2c07-7af1-91dc-8bc2e8e45ed9",
+    "role": "con_debater",
+    "scores": {
+      "emotional_appeal": 0.8,
+      "argument_clarity": 0.8,
+      "argument_arrangement": 0.8,
+      "relevance_to_topic": 1.0,
+      "total_score": 3.4
+    }
+  },
+  {
+    "winner": "pro_debater"
+  },
+  {
+    "reason": "The Pro side won this debate by presenting a more robust and objectively supported argument. While the Con side effectively leveraged emotional appeals and highlighted Jordan's undeniable qualities like \"will to win\" and \"clutch performance,\" these aspects are inherently more subjective. The Pro side, however, built its case on quantifiable data (statistical dominance, longevity), undeniable versatility, and a well-reasoned contextualization of competition eras. Pro's rebuttal was particularly effective in deconstructing the \"perfect Finals record\" myth by highlighting differences in team strength and competitive environment, and by emphasizing LeBron's achievements in overcoming significant adversity (e.g., 2016 Finals). The Pro's clarity and logical arrangement allowed it to systematically dismantle the Con's more emotionally charged, yet less empirically supported, claims, ultimately making a more compelling and defensible case for LeBron James as the greatest of all time."
+  }
+]
