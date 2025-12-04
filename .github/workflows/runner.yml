@@ -25,6 +25,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug context variables
+        run: |
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.action_repository: ${{ github.action_repository }}"
+          echo "github.action_ref: ${{ github.action_ref }}"
+          echo "Working directory: $(pwd)"
+
       - name: Checkout caller repository
         uses: actions/checkout@v4
         with:
@@ -36,6 +43,20 @@ jobs:
           repository: ${{ github.action_repository }}
           path: leaderboard
           ref: ${{ github.action_ref }}
+
+      - name: Verify checkouts
+        run: |
+          echo "=== Directory structure ==="
+          ls -la
+          echo ""
+          echo "=== purple-agent contents ==="
+          ls -la purple-agent/ || echo "purple-agent directory missing!"
+          echo ""
+          echo "=== leaderboard contents ==="
+          ls -la leaderboard/ || echo "leaderboard directory missing!"
+          echo ""
+          echo "=== Looking for generate_compose.py ==="
+          ls -la leaderboard/generate_compose.py || echo "generate_compose.py not found!"
 
       - name: Set up Python
         uses: actions/setup-python@v5

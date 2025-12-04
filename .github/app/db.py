@@ -42,11 +42,21 @@ async def run_migrations():
             
             print(f"Applying migration: {migration_file.name}")
             sql = migration_file.read_text()
-            await conn.execute(sql)
-            await conn.execute(
-                "INSERT INTO _migrations (name) VALUES ($1)",
-                migration_file.name
-            )
+            
+            # Remove comment lines before splitting by semicolon
+            lines = [line for line in sql.split("\n") if not line.strip().startswith("--")]
+            sql_no_comments = "\n".join(lines)
+            
+            # Execute each statement separately (asyncpg only runs one at a time)
+            statements = [s.strip() for s in sql_no_comments.split(";") if s.strip()]
+            async with conn.transaction():
+                for statement in statements:
+                    await conn.execute(statement)
+                await conn.execute(
+                    "INSERT INTO _migrations (name) VALUES ($1)",
+                    migration_file.name
+                )
+            print(f"Applied migration: {migration_file.name}")
 
 
 async def close_db():
