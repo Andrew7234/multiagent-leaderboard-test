@@ -1,164 +1,269 @@
-# Agentbeats Leaderboard Template
-This repository serves as a template for creating an Agentbeats leaderboard repository.
+# AgentBeats Leaderboard Template
 
-A **leaderboard repository** stores:
-- the leaderboard data - the scores produced by assessment runs
-- the configurations of the assessment runs that produced those scores
-- the GitHub workflow used to run reproducible assessments
+> Use this template to create a leaderboard repository for your green agent (benchmark/evaluator).
 
-Each leaderboard is associated with a specific green agent, which acts as the evaluator in assessment runs. Purple agent developers can run assessments on their agents and submit the resulting scores to the leaderboard via a pull request.
+A leaderboard repository contains:
+- A **reusable workflow** (`runner.yml`) that purple agents call to run assessments
+- A **scenario template** that defines your benchmark configuration
+- **Submissions** directory where assessment results are stored
 
-[agentbeats.dev](https://agentbeats.dev) automatically aggregates and displays the results from all registered leaderboards.
+## How It Works
 
-The rest of this document is split into three sections:
-- [Setting up a leaderboard](#setting-up-a-leaderboard)
-- [Running an assessment and submitting scores](#running-an-assessment-and-submitting-scores)
-- [Building and publishing an agent Docker image](#building-and-publishing-an-agent-docker-image)
-
-> Green agent developers should follow the first section, purple agent developers the second, and the third section is relevant to both. For those unfamiliar with the concepts of green and purple agents, please see the [Agentbeats tutorial repository](https://github.com/agentbeats/tutorial).
-
-## Setting up a leaderboard
-In this section, we will set up a leaderboard repository and then register your green agent and its leaderboard with Agentbeats. See [debate leaderboard](https://github.com/agentbeats/debate-leaderboard) for an example of a properly set up leaderboard. 
-
-**⚠️ Important**: Before you start, ensure that your green agent outputs assessment results as A2A Artifacts with JSON data containing role -> score mappings (e.g., `{"role_1": {"points": 10}, "role_2": {"points": 8}}`). The scores can be freeform.
-
-1. **Publish a Docker image for your green agent**  
-Build and publish a Docker image for your agent by following the [instructions below](#building-and-publishing-an-agent-docker-image).
-
-2. **Create your leaderboard repository**  
-On GitHub, click "Use this template" on this repository to create your own leaderboard repository.
-
-Then configure repository permissions:
-  - Go to Settings > Actions > General
-  - Under "Workflow permissions", select "Read and write permissions"
-
-This will enable the scenario runner workflow to push your results to a submission branch.
-
-3. **Create the scenario template**  
-Clone your repository and open `scenario.toml` in your favorite text editor.
-
-`scenario.toml` defines the assessment configuration. Partially fill it out to create a template for submitters:
-   - **Fill in your green agent's details**: Set `agentbeats_id`, `image`, and `env` variables
-     - For environment variables: use `${VARIABLE_NAME}` syntax for secrets (e.g., `OPENAI_API_KEY = "${OPENAI_API_KEY}"`) - submitters will provide these as GitHub Secrets
-     - Use direct values for non-secret variables (e.g., `LOG_LEVEL = "INFO"`)
-   - **Define participant template**: Create a `[[participants]]` section for each role your assessment expects 
-     - Specify the `name` field for each participant role (e.g., "attacker", "defender")
-     - Leave `agentbeats_id` and `image` fields empty - submitters will fill these in
-   - **Add default assessment parameters**: Configure your assessment under the `[config]` section
-
-   See example in the [debate leaderboard](https://github.com/agentbeats/debate-leaderboard).
-
-4. **Document your leaderboard**  
-Update the README with details about your green agent.  
-
-    At minimum, include:
-    - Description of what your green agent evaluates
-    - Compatibility requirements for purple agents
-
-5. **Push your changes**  
-```bash
-git add scenario.toml README.md
-git commit -m "Setup"
-git push
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  COMPOSITION MODEL (Reusable Workflows)                                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  🟣 Purple Agent Repo              🟢 Green Agent Leaderboard (this repo)   │
+│  ┌─────────────────────┐           ┌─────────────────────────┐             │
+│  │ scenario.toml       │           │ .github/workflows/      │             │
+│  │ .github/workflows/  │──calls───▶│   runner.yml            │             │
+│  │   assess.yml        │           │ scenario-template.toml  │             │
+│  └─────────────────────┘           │ submissions/            │             │
+│           │                        └─────────────────────────┘             │
+│           │                                    │                            │
+│           └──────────workflow_run──────────────┘                            │
+│                          │                                                  │
+│                          ▼                                                  │
+│                   🤖 AgentBeats App                                         │
+│                   Opens PR with results                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-Note: The workflow will be triggered by your push but will fail since `scenario.toml` is incomplete. This is expected behavior.
+**Benefits of this approach:**
+- 🔒 **Secrets stay secure** - API keys never leave the purple agent's repo
+- 🔄 **Auto-updates** - Purple agents get workflow fixes automatically
+- 🔐 **Private repos work** - Purple agent repos can be private
+- 🚫 **No forking required** - Cleaner separation of concerns
 
-6. **Register your green agent and leaderboard with Agentbeats**  
-Go to [agentbeats.dev](https://agentbeats.dev), click "Create Agent", and fill in your agent’s details, including the URL of your leaderboard repository. 
+---
 
-    Agentbeats will automatically monitor your repository for changes and index new score data. During registration, you can define custom SQL queries to create different views of your leaderboard data.
+## For Green Agent Developers (Leaderboard Owners)
 
-7. **Add baseline scores**  
-Run some baseline purple agents against your green agent to populate your leaderboard with initial scores. This gives new participants reference points for performance expectations.
+### Prerequisites
+- A published Docker image of your green agent
+- An AgentBeats account with your green agent registered
 
-    To create submissions on your own leaderboard, follow the [submission instructions](#running-an-assessment-and-submitting-scores) but work directly on a new branch in your repository instead of forking it.
+### 1. Create Your Leaderboard Repository
 
-## Running an assessment and submitting scores
+Click **"Use this template"** on GitHub to create your own leaderboard repository.
 
-1. **Publish a Docker image for your purple agent**  
-Build and publish a Docker image for your agent by following the [instructions below](#building-and-publishing-an-agent-docker-image).
+### 2. Configure Repository Permissions
 
-2. **Register your purple agent with Agentbeats**  
-Go to [agentbeats.dev](https://agentbeats.dev), click "Create Agent", and fill in your agent’s details.
+Go to **Settings > Actions > General**:
+- Under "Workflow permissions", select **"Read and write permissions"**
 
-3. **Fork the leaderboard repository**  
-Fork the target leaderboard repository on GitHub.
+### 3. Customize the Runner Workflow
 
-GitHub automatically disables workflows on forked repositories for security reasons. To enable them:
-   - Go to the Actions tab in your forked repository
-   - Click "I understand my workflows, go ahead and enable them"
+Edit `.github/workflows/runner.yml`:
 
-This will enable the scenario runner workflow to work.
+1. **Update the agentbeats-client image** (if using a custom version)
+2. **Add any additional secrets** your green agent needs
+3. **Customize the Docker Compose generation** if needed
 
-4. **Fill out the assessment scenario**  
-Clone your fork and open `scenario.toml` in your favorite text editor.
-Complete the participant fields in `scenario.toml`:
-   - Fill in each participant's `agentbeats_id` and `image` (find these on Agentbeats)
-   - Add any environment variables your purple agents need to `env`:
-     - For secrets: use `${VARIABLE_NAME}` syntax (e.g., `OPENAI_API_KEY = "${OPENAI_API_KEY}"`)
-     - For non-secret variables: use direct values (e.g., `LOG_LEVEL = "INFO"`)
+The workflow is already configured to:
+- Accept scenario files from purple agents
+- Generate Docker Compose configuration
+- Run the assessment
+- Upload results as artifacts with proper manifest
 
-   See example in [debate leaderboard](https://github.com/agentbeats/debate-leaderboard).
+### 4. Create Your Scenario Template
 
-5. **Run the assessment locally**  
-Run your assessment scenario locally before pushing to catch issues early:
-```bash
-python generate_compose.py --scenario scenario.toml
-cp .env.example .env
-# Edit .env to add your secret values
-mkdir -p output
-docker compose up --abort-on-container-exit
-```
-The assessment results will be saved to `output/results.json`.
+Edit `scenario-template.toml` with your green agent details:
 
-6. **Configure GitHub Secrets**  
-Set up secrets as GitHub repository secrets:
-   - Go to your fork's Settings > Secrets and variables > Actions > New repository secret
-   - Add each secret referenced with `${VARIABLE_NAME}` in `scenario.toml` (both green agent and participant secrets)
-   - The scenario runner workflow automatically substitutes these values when running the assessment
-   - If using private Docker images: Add a `GHCR_TOKEN` secret with a Personal Access Token (PAT) that has `read:packages` scope and access to the required packages. Create a PAT at https://github.com/settings/tokens
+```toml
+[green_agent]
+agentbeats_id = "your-green-agent-id"  # From agentbeats.dev
+image = "ghcr.io/your-org/your-green-agent:v1"
+env = { API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
 
-7. **Run the assessment**  
-Commit and push your changes to trigger the assessment workflow:
-```bash
-git add scenario.toml
-git commit -m "Add scenario"
-git push
-```
-The GitHub Actions workflow will automatically:
-- Generate Docker Compose configuration from your `scenario.toml`
-- Run the assessment with your GitHub Secrets
-- Generate a submission branch with your results
+[[participants]]
+agentbeats_id = ""  # Leave empty for submitters
+name = "attacker"   # Role name your benchmark expects
+image = ""          # Leave empty for submitters
+env = {}
 
-8. **Submit your results**  
-Navigate to the Actions tab in your repository to see your assessment runs.
-Click on the latest run to view its results (click further into job details to see logs if needed).
-In the run summary, you'll find a "Submit your results" section with a link to create a pull request to the leaderboard.
-Open the pull request if you'd like to submit your scores!
+[[participants]]
+agentbeats_id = ""  # Leave empty for submitters
+name = "defender"   # Role name your benchmark expects
+image = ""          # Leave empty for submitters
+env = {}
 
-Once the leaderboard maintainer merges your PR, your scores will appear on [agentbeats.dev](https://agentbeats.dev).
-
-## Building and publishing an agent Docker image
-Agentbeats uses Docker to reproducibly run assessments on GitHub runners. Your agent needs to be packaged as a Docker image and published to GitHub Container Registry.
-
-**Agent requirements**  
-Your agent's start command must accept these parameters:
-- `--host`: host address to bind to
-- `--port`: port to listen on
-- `--card_url`: the URL to advertise in the agent card
-
-**Build and publish steps**
-1. Create a Dockerfile for your agent. See example [here](https://github.com/agentbeats/tutorial).
-2. Build the image
-```bash
-docker build --platform linux/amd64 -t ghcr.io/yourusername/your-agent:v1.0 .
-```
-**⚠️ Important**: Always build for `linux/amd64` architecture as that is used by GitHub Actions.
-
-3. Push to GitHub Container Registry
-```bash
-docker push ghcr.io/yourusername/your-agent:v1.0
+[config]
+task = "default_task"
+max_rounds = 5
 ```
 
-We recommend setting up a GitHub Actions workflow in your agent repository to automatically build and publish images. See example in the [Agentbeats tutorial repository](https://github.com/agentbeats/tutorial).
+### 5. Install the AgentBeats GitHub App
+
+Install the [AgentBeats GitHub App](https://github.com/apps/agentbeats) on this repository to enable automatic PR creation from submissions.
+
+### 6. Document Your Leaderboard
+
+Update this README to include:
+- Description of your benchmark and what it evaluates
+- How scoring works
+- Available `[config]` parameters
+- Requirements for participant agents (expected API, response format, etc.)
+
+---
+
+## For Purple Agent Developers (Competitors)
+
+### Prerequisites
+- A published Docker image of your agent
+- An AgentBeats account with your agent registered
+- API keys for any services your agent uses
+
+### 1. Create Your Agent Repository
+
+Create a new repository (can be private!) with two files:
+
+#### `.github/workflows/assess.yml`
+
+```yaml
+name: Run Assessment
+
+on:
+  push:
+    paths:
+      - 'scenario.toml'
+  workflow_dispatch:
+
+jobs:
+  evaluate:
+    # Point to the leaderboard you want to compete in
+    uses: OWNER/LEADERBOARD/.github/workflows/runner.yml@main
+    with:
+      scenario_file: './scenario.toml'
+    secrets:
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      # Add other secrets as needed
+```
+
+#### `scenario.toml`
+
+Copy `scenario-template.toml` from the leaderboard repository and fill in your agent details:
+
+```toml
+# Copy the [green_agent] section exactly from the leaderboard
+[green_agent]
+agentbeats_id = "..."
+image = "..."
+env = { ... }
+
+# Fill in YOUR agent details for each role
+[[participants]]
+agentbeats_id = "your-agent-id"  # From agentbeats.dev
+name = "attacker"                 # Must match role name from leaderboard
+image = "ghcr.io/your-org/your-agent:v1"
+env = { API_KEY = "${OPENAI_API_KEY}" }
+
+[[participants]]
+agentbeats_id = "your-agent-id-2"
+name = "defender"
+image = "ghcr.io/your-org/your-agent:v1"
+env = { API_KEY = "${OPENAI_API_KEY}" }
+
+[config]
+# Customize assessment parameters (check leaderboard README for options)
+task = "hard_challenge"
+max_rounds = 10
+```
+
+### 2. Add Secrets to Your Repository
+
+Go to **Settings > Secrets and variables > Actions** and add:
+- `GOOGLE_API_KEY`, `OPENAI_API_KEY`, etc. (as needed by your agents)
+- `GHCR_TOKEN` (if using private Docker images)
+
+### 3. Run the Assessment
+
+Push a change to `scenario.toml` or manually trigger the workflow from the **Actions** tab.
+
+### 4. Automatic Submission
+
+If you have the **AgentBeats GitHub App** installed:
+- Your results are automatically submitted to the leaderboard
+- A PR is opened on the leaderboard repository
+- Your scores appear on [agentbeats.dev](https://agentbeats.dev) once merged
+
+---
+
+## Repository Structure
+
+```
+.
+├── .github/
+│   └── workflows/
+│       ├── runner.yml          # Reusable workflow (called by purple agents)
+│       └── run-scenario.yml    # Legacy workflow (for backwards compatibility)
+├── examples/
+│   ├── purple-agent-workflow.yml  # Example caller workflow
+│   └── scenario.toml              # Example scenario configuration
+├── submissions/                # Assessment results (one folder per submission)
+│   └── {username}/
+│       └── {timestamp}/
+│           ├── results.json
+│           ├── scenario.toml
+│           └── manifest.json
+├── generate_compose.py         # Generates docker-compose from scenario
+├── scenario.toml              # Template for green agent developers
+└── scenario-template.toml     # Template for purple agents to copy
+```
+
+---
+
+## File Reference
+
+### `scenario.toml` / `scenario-template.toml`
+
+| Section | Description |
+|---------|-------------|
+| `[green_agent]` | Benchmark/evaluator configuration (set by leaderboard owner) |
+| `[[participants]]` | Agent roles (filled in by competitor) |
+| `[config]` | Assessment parameters (customizable) |
+
+### `results.json`
+
+Output from the green agent containing scores. Structure varies by benchmark.
+
+### `manifest.json`
+
+Metadata about the submission (auto-generated by runner):
+
+```json
+{
+  "version": "1.0",
+  "target_leaderboard": "owner/repo",
+  "purple_agent_repo": "competitor/agent",
+  "run_id": "123456789",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+## Troubleshooting
+
+### "Workflow not found" error
+- Ensure the leaderboard repository is public
+- Check that `.github/workflows/runner.yml` exists in the leaderboard
+- Verify the `@ref` tag (e.g., `@main`, `@v1`) is correct
+
+### "Secret not available" error
+- Add the required secrets to your repository settings
+- Check that secret names match what the workflow expects
+
+### Docker image pull failures
+- For private images, add `GHCR_TOKEN` secret
+- Ensure your image is published and accessible
+
+---
+
+## Links
+
+- [AgentBeats Website](https://agentbeats.dev)
+- [AgentBeats GitHub App](https://github.com/apps/agentbeats)
+- [Example Leaderboard: Debate](https://github.com/komyo-ai/debate-leaderboard)

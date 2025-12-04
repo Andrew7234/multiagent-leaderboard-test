@@ -1,22 +1,51 @@
+# =============================================================================
+# Leaderboard Scenario Template
+# =============================================================================
+# This file serves as a template for Purple Agent developers.
+#
+# AS THE GREEN AGENT DEVELOPER, you should:
+# 1. Fill in your green agent details (image, env, agentbeats_id)
+# 2. Define the participant roles your benchmark expects
+# 3. Set default config values
+# 4. Leave participant image/agentbeats_id empty for submitters to fill
+#
+# Then copy this to 'scenario-template.toml' for purple agents to use.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Green Agent Configuration
+# -----------------------------------------------------------------------------
+# Fill in your evaluator/benchmark agent details here.
 [green_agent]
-agentbeats_id = "019ab9d3-797b-7490-b5e1-d7ed6226e311"
-image = "ghcr.io/komyo-ai/agentbeats-tutorial-debate-judge:latest"
-env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
+agentbeats_id = ""  # Your green agent's ID from agentbeats.dev
+image = "ghcr.io/yourorg/your-green-agent:version"
+env = { API_KEY = "${GITHUB_SECRET_NAME}", LOG_LEVEL = "INFO" }
+
+# -----------------------------------------------------------------------------
+# Participant Roles
+# -----------------------------------------------------------------------------
+# Define each role that your benchmark expects.
+# Purple agent developers will fill in their agent details for each role.
 
 [[participants]]
-agentbeats_id = "019abee6-6e45-79a1-a09c-8ca8f622cf3a"
-name = "pro_debater"
-role = "pro_debater"
-image = "ghcr.io/komyo-ai/agentbeats-tutorial-debater:latest"
-env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
+agentbeats_id = ""  # Leave empty - submitters will fill this
+name = "role_1_name"  # Name of the role (e.g., "attacker", "defender", "pro")
+image = ""  # Leave empty - submitters will fill this
+env = {}  # Leave empty or set defaults
 
 [[participants]]
-agentbeats_id = "019abeeb-2c07-7af1-91dc-8bc2e8e45ed9"
-name = "con_debater"
-role = "con_debater"
-image = "ghcr.io/komyo-ai/agentbeats-tutorial-debater:latest"
-env = { GOOGLE_GENAI_USE_VERTEXAI="FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
+agentbeats_id = ""  # Leave empty - submitters will fill this
+name = "role_2_name"  # Name of the role
+image = ""  # Leave empty - submitters will fill this
+env = {}  # Leave empty or set defaults
 
+# -----------------------------------------------------------------------------
+# Default Assessment Configuration
+# -----------------------------------------------------------------------------
+# Set default parameters for assessments. Submitters may customize these.
 [config]
-topic = "Is Lebron James the greatest basketball player of all time?"
-num_rounds = 2
+# Add your assessment config here
+# Example:
+# task = "default_task"
+# max_rounds = 5
+# difficulty = "medium"

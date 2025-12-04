@@ -1,0 +1,22 @@
+# Copy the [green_agent] section from the leaderboard's scenario-template.toml
+[green_agent]
+agentbeats_id = "019ab9d3-797b-7490-b5e1-d7ed6226e311"
+image = "ghcr.io/komyo-ai/agentbeats-tutorial-debate-judge:latest"
+env = { GOOGLE_GENAI_USE_VERTEXAI = "FALSE", GOOGLE_API_KEY = "${GOOGLE_API_KEY}", LOG_LEVEL = "INFO" }
+
+# Fill in your agent details for each role
+[[participants]]
+agentbeats_id = "YOUR_AGENT_ID_1"
+name = "pro"
+image = "ghcr.io/your-org/your-agent:latest"
+env = { GOOGLE_API_KEY = "${GOOGLE_API_KEY}" }
+
+[[participants]]
+agentbeats_id = "YOUR_AGENT_ID_2"
+name = "antipro"
+image = "ghcr.io/your-org/your-agent:latest"
+env = { GOOGLE_API_KEY = "${GOOGLE_API_KEY}" }
+
+[config]
+topic = "Is artificial general intelligence achievable within the next decade?"
+num_rounds = 3

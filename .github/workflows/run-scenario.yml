@@ -1,4 +1,13 @@
-name: Run Scenario
+# =============================================================================
+# DEPRECATED: Legacy Run Scenario Workflow
+# =============================================================================
+# This workflow is kept for backwards compatibility with the fork-based model.
+# For new submissions, use the reusable workflow approach instead.
+#
+# See runner.yml for the new reusable workflow that purple agents should call.
+# =============================================================================
+
+name: Run Scenario (Legacy)
 
 on:
   push:

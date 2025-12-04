@@ -1,0 +1,138 @@
+# AgentBeats Assessment Runner (Reusable Workflow)
+name: AgentBeats Assessment Runner
+
+on:
+  workflow_call:
+    inputs:
+      scenario_file:
+        description: 'Path to scenario.toml'
+        required: false
+        default: './scenario.toml'
+        type: string
+    secrets:
+      GOOGLE_API_KEY:
+        required: false
+      OPENAI_API_KEY:
+        required: false
+      ANTHROPIC_API_KEY:
+        required: false
+      GHCR_TOKEN:
+        required: false
+
+jobs:
+  assess:
+    name: Run Assessment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+        with:
+          path: purple-agent
+
+      - name: Checkout leaderboard repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.action_repository }}
+          path: leaderboard
+          ref: ${{ github.action_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate scenario file
+        run: |
+          if [ ! -f "purple-agent/${{ inputs.scenario_file }}" ]; then
+            echo "::error::Scenario file not found: ${{ inputs.scenario_file }}"
+            exit 1
+          fi
+
+      - name: Generate docker-compose.yml
+        working-directory: purple-agent
+        run: python ../leaderboard/generate_compose.py --scenario "${{ inputs.scenario_file }}"
+
+      - name: Create output directory
+        working-directory: purple-agent
+        run: mkdir -p output && chmod 777 output
+
+      - name: Create .env file
+        working-directory: purple-agent
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          touch .env
+          [ -n "$GOOGLE_API_KEY" ] && echo "GOOGLE_API_KEY=$GOOGLE_API_KEY" >> .env
+          [ -n "$OPENAI_API_KEY" ] && echo "OPENAI_API_KEY=$OPENAI_API_KEY" >> .env
+          [ -n "$ANTHROPIC_API_KEY" ] && echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> .env
+
+      - name: Check GHCR token
+        id: check_ghcr
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: echo "has_token=$( [ -n \"$GHCR_TOKEN\" ] && echo true || echo false )" >> $GITHUB_OUTPUT
+
+      - name: Login to GHCR
+        if: steps.check_ghcr.outputs.has_token == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Run assessment
+        working-directory: purple-agent
+        run: docker compose up --exit-code-from agentbeats-client --abort-on-container-exit
+
+      - name: Display results
+        working-directory: purple-agent
+        run: cat output/results.json | jq '.' || cat output/results.json
+
+      - name: Generate manifest
+        working-directory: purple-agent
+        run: |
+          cat > output/manifest.json << EOF
+          {
+            "version": "1.0",
+            "target_leaderboard": "${{ github.action_repository }}",
+            "purple_agent_repo": "${{ github.repository }}",
+            "purple_agent_owner": "${{ github.repository_owner }}",
+            "run_id": "${{ github.run_id }}",
+            "run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "triggered_by": "${{ github.actor }}",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit_sha": "${{ github.sha }}",
+            "ref": "${{ github.ref }}",
+            "workflow_ref": "${{ github.action_ref }}"
+          }
+          EOF
+
+      - name: Upload submission artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentbeats-submission
+          path: |
+            purple-agent/output/results.json
+            purple-agent/output/manifest.json
+            purple-agent/${{ inputs.scenario_file }}
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Cleanup
+        if: always()
+        working-directory: purple-agent
+        run: docker compose down -v || true
+
+      - name: Summary
+        if: success()
+        run: |
+          echo "## ✅ Assessment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Results uploaded. If the AgentBeats App is installed, a PR will be opened on [\`${{ github.action_repository }}\`](https://github.com/${{ github.action_repository }})." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat purple-agent/output/results.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
