@@ -25,6 +25,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Debug - GitHub context
+        run: |
+          echo "github.repository: ${{ github.repository }}"
+          echo "github.workflow_ref: ${{ github.workflow_ref }}"
+          echo "github.action_repository: ${{ github.action_repository }}"
+          echo "github.action_ref: ${{ github.action_ref }}"
+
       - name: Parse leaderboard repo from workflow ref
         id: leaderboard
         run: |
@@ -47,6 +54,24 @@ jobs:
           repository: ${{ steps.leaderboard.outputs.repo }}
           ref: ${{ steps.leaderboard.outputs.ref }}
           path: leaderboard
+
+      - name: Debug - Verify checkouts
+        run: |
+          echo "=== Parsed values ==="
+          echo "Leaderboard repo: ${{ steps.leaderboard.outputs.repo }}"
+          echo "Leaderboard ref: ${{ steps.leaderboard.outputs.ref }}"
+          echo ""
+          echo "=== Directory structure ==="
+          ls -la
+          echo ""
+          echo "=== purple-agent contents ==="
+          ls -la purple-agent/ || echo "purple-agent directory missing!"
+          echo ""
+          echo "=== leaderboard contents ==="
+          ls -la leaderboard/ || echo "leaderboard directory missing!"
+          echo ""
+          echo "=== Looking for generate_compose.py ==="
+          ls -la leaderboard/generate_compose.py || echo "generate_compose.py not found!"
 
       - name: Set up Python
         uses: actions/setup-python@v5
