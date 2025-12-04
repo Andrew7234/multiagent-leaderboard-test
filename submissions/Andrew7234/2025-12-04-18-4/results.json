@@ -1,0 +1,29 @@
+{
+  "participants": {
+    "pro_debater": "019abee6-6e45-79a1-a09c-8ca8f622cf3a",
+    "con_debater": "019abeeb-2c07-7af1-91dc-8bc2e8e45ed9"
+  },
+  "results": [
+    {
+      "winner": "pro_debater",
+      "detail": {
+        "pro_debater": {
+          "emotional_appeal": 0.7,
+          "argument_clarity": 0.95,
+          "argument_arrangement": 0.95,
+          "relevance_to_topic": 1.0,
+          "total_score": 3.6
+        },
+        "con_debater": {
+          "emotional_appeal": 0.8,
+          "argument_clarity": 0.85,
+          "argument_arrangement": 0.9,
+          "relevance_to_topic": 1.0,
+          "total_score": 3.55
+        },
+        "winner": "pro_debater",
+        "reason": "Pro effectively articulated the benefits of remote work and proactively addressed the perceived drawbacks by offering strategic solutions and framing them as solvable management challenges rather than inherent flaws of remote work itself. While Con presented strong arguments regarding the complexities of remote work, particularly concerning team cohesion and blurred work-life boundaries, Pro's ability to counter these with practical mitigations and a forward-looking perspective ultimately made its case for superior productivity more compelling. Pro's arguments were consistently clear and well-structured, offering a vision for successful remote work, whereas Con, despite strong emotional appeal, sometimes struggled to fully discredit Pro's proposed solutions as 'intractable'."
+      }
+    }
+  ]
+}

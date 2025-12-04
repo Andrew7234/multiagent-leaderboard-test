@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "target_leaderboard": "Andrew7234/multiagent-leaderboard-test",
+  "leaderboard_ref": "main",
+  "purple_agent_repo": "Andrew7234/multiagent-agentbeats-purple-test",
+  "purple_agent_owner": "Andrew7234",
+  "run_id": "19940211486",
+  "run_url": "https://github.com/Andrew7234/multiagent-agentbeats-purple-test/actions/runs/19940211486",
+  "triggered_by": "Andrew7234",
+  "timestamp": "2025-12-04T18:48:49Z",
+  "commit_sha": "b23873d31b07d505230ef8de3d241c2696c8ee6e",
+  "ref": "refs/heads/main",
+  "workflow_ref": "Andrew7234/multiagent-agentbeats-purple-test/.github/workflows/assess.yml@refs/heads/main"
+}
